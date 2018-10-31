@@ -1374,7 +1374,8 @@ public final class ActivityStackSupervisor implements DisplayListener {
     }
 
     /**
-     * WB_ANDROID: 启动 activity 所在的进程.
+     * WB_ANDROID: 2018-06-29 1333 
+     * 启动 activity 所在的进程.
      */
     void startSpecificActivityLocked(ActivityRecord r,
             boolean andResume, boolean checkConfig) {
@@ -1405,7 +1406,7 @@ public final class ActivityStackSupervisor implements DisplayListener {
             // If a dead object exception was thrown -- fall through to
             // restart the application.
         }
-
+        //启动应用的进程. 
         mService.startProcessLocked(r.processName, r.info.applicationInfo, true, 0,
                 "activity", r.intent.getComponent(), false, false, true);
     }
@@ -1816,6 +1817,9 @@ public final class ActivityStackSupervisor implements DisplayListener {
         return resumeFocusedStackTopActivityLocked(null, null, null);
     }
 
+    /**
+     * WB_ANDROID: 2018-06-29 1337 
+     */
     boolean resumeFocusedStackTopActivityLocked(
             ActivityStack targetStack, ActivityRecord target, ActivityOptions targetOptions) {
         if (targetStack != null && isFocusedStack(targetStack)) {
@@ -3064,6 +3068,9 @@ public final class ActivityStackSupervisor implements DisplayListener {
         }
     }
 
+    /**
+     * WB_ANDROID: 2018-06-29 1339 
+     */
     boolean switchUserLocked(int userId, UserState uss) {
         final int focusStackId = mFocusedStack.getStackId();
         // We dismiss the docked stack whenever we switch users.

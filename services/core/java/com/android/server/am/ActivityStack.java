@@ -1877,6 +1877,7 @@ final class ActivityStack {
                 setVisible(r, true);
             }
             if (r != starting) {
+                //WB_ANDROID: 2018-06-29 1333 
                 //检查 activity 进程是否启动, 如果没有, 则启动进程.
                 mStackSupervisor.startSpecificActivityLocked(r, andResume, false);
                 return true;
@@ -2076,6 +2077,8 @@ final class ActivityStack {
     }
 
     /**
+     * WB_ANDROID: 2018-06-29 1336 
+     * 
      * Ensure that the top activity in the stack is resumed.
      *
      * @param prev The previously resumed activity, for when in the process
@@ -2111,6 +2114,9 @@ final class ActivityStack {
         return result;
     }
 
+    /**
+     * WB_ANDROID: 2018-06-29 1335 启动进程或者 activity 的入口方法.
+     */
     private boolean resumeTopActivityInnerLocked(ActivityRecord prev, ActivityOptions options) {
         if (DEBUG_LOCKSCREEN) mService.logLockScreen("");
 
@@ -2512,6 +2518,7 @@ final class ActivityStack {
                         mStackSupervisor.isFrontStack(lastStack)) {
                     next.showStartingWindow(null, true);
                 }
+                //WB_ANDROID: 2018-06-29 1333 启动activity或者进程
                 mStackSupervisor.startSpecificActivityLocked(next, true, false);
                 if (DEBUG_STACK) mStackSupervisor.validateTopActivitiesLocked();
                 return true;
@@ -2634,6 +2641,9 @@ final class ActivityStack {
         updateTaskMovement(task, true);
     }
 
+    /**
+     * WB_ANDROID: 启动 activity, 过程中会检查是否需要启动应用的进程. 
+     */
     final void startActivityLocked(ActivityRecord r, boolean newTask, boolean keepCurTransition,
             ActivityOptions options) {
         TaskRecord rTask = r.task;

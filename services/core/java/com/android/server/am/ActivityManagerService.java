@@ -6384,6 +6384,10 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
     }
 
+    /**
+     * WB_ANDROID: 2018-06-28 1516 
+     * {@code ActivityThread} 初始化之后, 通过 attch 方法, attchApplication.
+     */
     private final boolean attachApplicationLocked(IApplicationThread thread,
             int pid) {
 
@@ -6405,7 +6409,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             EventLog.writeEvent(EventLogTags.AM_DROP_PROCESS, pid);
             if (pid > 0 && pid != MY_PID) {
                 Process.killProcessQuiet(pid);
-                //TODO: killProcessGroup(app.info.uid, pid);
+                //killProcessGroup(app.info.uid, pid);
             } else {
                 try {
                     thread.scheduleExit();
@@ -6526,6 +6530,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
             ProfilerInfo profilerInfo = profileFile == null ? null
                     : new ProfilerInfo(profileFile, profileFd, samplingInterval, profileAutoStop);
+            //WB_ANDROID: 2018-06-28 1509 
+            //由于ActivityThread 通过 bind 机制, 在该进程中启动服务, attchApplication, 当一切
+            //准备就绪之后, 再通过ApplicationThread 去执行应用的后续的初始化. 
             thread.bindApplication(processName, appInfo, providers, app.instrumentationClass,
                     profilerInfo, app.instrumentationArguments, app.instrumentationWatcher,
                     app.instrumentationUiAutomationConnection, testMode,
@@ -6619,6 +6626,10 @@ public final class ActivityManagerService extends ActivityManagerNative
         return true;
     }
 
+    /**
+     * WB_ANDROID: 2018-06-28 1515 
+     * {@link ActivityThread} 中的attach  方法中会调用.
+     */
     @Override
     public final void attachApplication(IApplicationThread thread) {
         synchronized (this) {
@@ -20529,6 +20540,11 @@ public final class ActivityManagerService extends ActivityManagerNative
         return success;
     }
 
+    /**
+     * WB_ANDROID:
+     * 修改进程的 oomAdj 参数. 也就是一个进程的 MAX_JVM 数值. 当超过这个数值的时候, 应用就会出现OOM
+     * 异常.
+     */
     final void updateOomAdjLocked() {
         final ActivityRecord TOP_ACT = resumedAppLocked();
         final ProcessRecord TOP_APP = TOP_ACT != null ? TOP_ACT.app : null;

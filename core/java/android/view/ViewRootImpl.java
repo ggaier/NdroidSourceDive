@@ -1070,6 +1070,9 @@ public final class ViewRootImpl implements ViewParent,
         invalidateChildInParent(null, dirty);
     }
 
+    /**
+     * WB_ANDROID: 2018-07-02 0936 调用该方法的时候, scheduleTraversals.
+     */
     @Override
     public ViewParent invalidateChildInParent(int[] location, Rect dirty) {
         checkThread();
@@ -1433,6 +1436,9 @@ public final class ViewRootImpl implements ViewParent,
         return (int) (displayMetrics.density * dip + 0.5f);
     }
 
+    /**
+     * 
+     */
     private void performTraversals() {
         // cache mView since it is used so much below...
         final View host = mView;

@@ -2340,9 +2340,19 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         return new DecorView(context, featureId, this, getAttributes());
     }
 
+    /**
+     * 该方法用来控制一个 Window 的样式. 通过观察 {@lind 
+     * ecorView#onResourceLoaded} 方法发现, Window 中的 content 总是使用 MATCH_PARENT 属
+     * 的. 所以, 决定Window 中的内容是否撑
+     * 整个屏幕的问题就在于: {@link #mContentParent} 的大小. 而决定该view 大小的就是
+     * Window_windowIsFloating 属性.
+     * 
+     * @see #mContentParent
+     */
     protected ViewGroup generateLayout(DecorView decor) {
+        //WB_ANDROID: 2018-10-31 1013 window 中的所有的内容都会填充到这里. 而被填充到这里的
+        //内容, 要么是DecorView, 要么是decorView 中的 content.
         // Apply data from current theme.
-
         TypedArray a = getWindowStyle();
 
         if (false) {
@@ -2357,8 +2367,10 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
         mIsFloating = a.getBoolean(R.styleable.Window_windowIsFloating, false);
         int flagsToUpdate = (FLAG_LAYOUT_IN_SCREEN|FLAG_LAYOUT_INSET_DECOR)
-                & (~getForcedWindowFlags());
+        & (~getForcedWindowFlags());
         if (mIsFloating) {
+            //此处能够看到, View 是否撑满屏幕, 取决于该属性. 如果该属性设置为 True, 那么
+            //Window 的布局就会被设置为 wrap content
             setLayout(WRAP_CONTENT, WRAP_CONTENT);
             setFlags(0, flagsToUpdate);
         } else {
@@ -2548,7 +2560,8 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         }
 
         // Inflate the window decor.
-
+        //WB_ANDROID: 2018-10-31 1549 此一步是用来扩充系统提供的子 View 到 Decor 中, 这些所提供的
+        //布局中都有 android.R.id.content 的 ViewGroup, 用来作为开发者的 View 的 Parent.
         int layoutResource;
         int features = getLocalFeatures();
         // System.out.println("Features: 0x" + Integer.toHexString(features));
@@ -2612,6 +2625,8 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         mDecor.startChanging();
         mDecor.onResourcesLoaded(mLayoutInflater, layoutResource);
 
+        //WB_ANDROID: 2018-10-31 1523 此处是创建 contentParent 的位置, 之后, window 中的
+        //所有的内容, 都会添加到该 ViewGroup 中.
         ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);
         if (contentParent == null) {
             throw new RuntimeException("Window couldn't find content container view");

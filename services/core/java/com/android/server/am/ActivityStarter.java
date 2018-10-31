@@ -887,6 +887,10 @@ class ActivityStarter {
         }
     }
 
+    /**
+     * WB_ANDROID: 2018-06-29 1500 
+     * 从{@link ActivityManagerService} 中启动 activity.
+     */
     final int startActivities(IApplicationThread caller, int callingUid, String callingPackage,
             Intent[] intents, String[] resolvedTypes, IBinder resultTo,
             Bundle bOptions, int userId) {
@@ -963,6 +967,11 @@ class ActivityStarter {
         return START_SUCCESS;
     }
 
+    /**
+     * WB_ANDROID: 2018-06-29 1344 当从桌面点击一个 icon 的时候, 会启动 activity , 或者是先创建进程,
+     * 再启动 activity.
+     * 此处这是 startActivity 的过程入口. 
+     */
     private int startActivityUnchecked(final ActivityRecord r, ActivityRecord sourceRecord,
             IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor,
             int startFlags, boolean doResume, ActivityOptions options, TaskRecord inTask) {
@@ -1145,6 +1154,7 @@ class ActivityStarter {
         ActivityStack.logStartActivity(
                 EventLogTags.AM_CREATE_ACTIVITY, mStartActivity, mStartActivity.task);
         mTargetStack.mLastPausedActivity = null;
+        //WB_ANDROID: 2018-06-29 1343 启动 activity 或者进程. 
         mTargetStack.startActivityLocked(mStartActivity, newTask, mKeepCurTransition, mOptions);
         if (mDoResume) {
             if (!mLaunchTaskBehind) {
