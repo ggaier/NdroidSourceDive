@@ -933,6 +933,9 @@ public abstract class Window {
      * @see ViewGroup.LayoutParams#width
      */
     public void setLayout(int width, int height) {
+        //WB_ANDROID: 2018-11-01 1449 此处设置完成布局之后, 会通过 callback 通知到
+        //Window 的载体(Activity 或者 Dialog), 最终到达WindowManagerGlobal.updateViewLayout()
+        //方法中, 由 ViewRootImpl 开始一次 Traverse.
         final WindowManager.LayoutParams attrs = getAttributes();
         attrs.width = width;
         attrs.height = height;
