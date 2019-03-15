@@ -552,10 +552,14 @@ public final class LoadedApk {
      */
     public ClassLoader getClassLoader() {
         //WB_ANDROID: 2018-12-14 1552 应用在首次初始化的的时候, 会通过LoaedApk 来获取ClassLoader.
+        //应用最终获取到的classLoader
         synchronized (this) {
             if (mClassLoader == null) {
                 createOrUpdateClassLoaderLocked(null /*addedPaths*/);
             }
+            //WB_ANDROID: 2019-03-16 0043 
+            //这里返回的classloader是ApplicationLoaders中创建的PathClassLoader
+            //而PathClassLoader则是DexClassLoader的子类. 所以具体逻辑还要参考DexClassLoader
             return mClassLoader;
         }
     }
