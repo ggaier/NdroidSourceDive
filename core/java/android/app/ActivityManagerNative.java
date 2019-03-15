@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** {@hide} */
+//该类的最终实现子类, ActivityManagerService.
 public abstract class ActivityManagerNative extends Binder implements IActivityManager {
     /**
      * Cast a Binder object into an activity manager interface, generating a proxy
@@ -139,6 +140,9 @@ public abstract class ActivityManagerNative extends Binder implements IActivityM
 
     @Override
     public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+        //WB_ANDROID: 2019-03-15 1724 
+        //binder中数据拷贝的第三步: 将数据从binder driver中拷贝到server process中. server process 拿到
+        //数据后进行unmarshalling.
         switch (code) {
         case START_ACTIVITY_TRANSACTION: {
             data.enforceInterface(IActivityManager.descriptor);
@@ -485,6 +489,8 @@ public abstract class ActivityManagerNative extends Binder implements IActivityM
             return true;
         }
 
+        //WB_ANDROID: 2019-03-15 1727 应用启动的时候, ActivityThread 调用的第一个方法, 同时传入
+        //ApplicationThread, 作为回调被启动应用的方法. 
         case ATTACH_APPLICATION_TRANSACTION: {
             data.enforceInterface(IActivityManager.descriptor);
             IApplicationThread app = ApplicationThreadNative.asInterface(data.readStrongBinder());
@@ -2938,6 +2944,8 @@ class ActivityManagerProxy implements IActivityManager {
     public int startActivity(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType,
             IBinder resultTo, String resultWho, int requestCode, int startFlags, ProfilerInfo profilerInfo,
             Bundle options) throws RemoteException {
+        //WB_ANDROID: 2019-03-15 1722 
+        //数据拷贝的过程总共有三步, 此为第一步, 将命令进行marshaling
         Parcel data = Parcel.obtain();
         Parcel reply = Parcel.obtain();
         data.writeInterfaceToken(IActivityManager.descriptor);
@@ -2961,6 +2969,8 @@ class ActivityManagerProxy implements IActivityManager {
         } else {
             data.writeInt(0);
         }
+        //WB_ANDROID: 2019-03-15 1722 
+        //数据copy的第二步, 将marshalling的数据拷贝到binder driver
         mRemote.transact(START_ACTIVITY_TRANSACTION, data, reply, 0);
         reply.readException();
         int result = reply.readInt();

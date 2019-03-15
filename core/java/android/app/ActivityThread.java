@@ -4998,6 +4998,7 @@ public final class ActivityThread {
      * WB_ANDROID: 2018-06-28 1519 真正的启动应用, 注册应用中的服务的过程
      */
     private void handleBindApplication(AppBindData data) {
+        //这里是ActivityManagerService bind
         // Register the UI Thread as a sensitive thread to the runtime.
         VMRuntime.registerSensitiveThread();
         if (data.trackAllocation) {
@@ -5227,6 +5228,7 @@ public final class ActivityThread {
         NetworkSecurityConfigProvider.install(appContext);
         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
 
+        //WB_ANDROID: 2018-12-14 1544 创建应用的时候, 初始化LoadedApk.
         // Continue loading instrumentation.
         if (ii != null) {
             final ApplicationInfo instrApp = new ApplicationInfo();
@@ -5805,8 +5807,10 @@ public final class ActivityThread {
                     ensureJitEnabled();
                 }
             });
+            //设置DDMS中应用的名字. (Dalvik Debug Monitor Server)
             android.ddm.DdmHandleAppName.setAppName("<pre-initialized>", UserHandle.myUserId());
             RuntimeInit.setApplicationObject(mAppThread.asBinder());
+            //获取一个ActivityManager的binder对象.
             final IActivityManager mgr = ActivityManagerNative.getDefault();
             try {
                 // 真正启动进行应用初始化的代码.

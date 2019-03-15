@@ -547,7 +547,11 @@ public final class LoadedApk {
         }
     }
 
+    /**
+     * 获取LoadedApk中的classLoader, 用来加载User Classes.
+     */
     public ClassLoader getClassLoader() {
+        //WB_ANDROID: 2018-12-14 1552 应用在首次初始化的的时候, 会通过LoaedApk 来获取ClassLoader.
         synchronized (this) {
             if (mClassLoader == null) {
                 createOrUpdateClassLoaderLocked(null /*addedPaths*/);

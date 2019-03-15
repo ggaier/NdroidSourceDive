@@ -2601,6 +2601,9 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         } else if ((features & (1 << FEATURE_NO_TITLE)) == 0) {
             // If no other features and not embedded, only need a title.
             // If the window is floating, we need a dialog layout
+            //WB_ANDROID: 2018-11-02 1135 
+            //如果是FEATURE_NO_TITLE, 添加isFloating 属性为 true 的话, 
+            //使用如下的布局, 而该布局的root parent 并没有设置宽度和高度.
             if (mIsFloating) {
                 TypedValue res = new TypedValue();
                 getContext().getTheme().resolveAttribute(
