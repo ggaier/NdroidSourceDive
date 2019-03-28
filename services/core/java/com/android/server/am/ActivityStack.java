@@ -1690,6 +1690,7 @@ final class ActivityStack {
      * Make sure that all activities that need to be visible (that is, they
      * currently can be seen by the user) actually are.
      */
+     /**WB_ANDROID: 2019-03-28 1710 启动 Activity 或者进程的真正入口 */
     final void ensureActivitiesVisibleLocked(ActivityRecord starting, int configChanges,
             boolean preserveWindows) {
         ActivityRecord top = topRunningActivityLocked();
@@ -1742,6 +1743,7 @@ final class ActivityStack {
                     }
 
                     if (r.app == null || r.app.thread == null) {
+                        /**WB_ANDROID: 2019-03-28 1714 开始启动进程, 然后在启动 Activity */
                         if (makeVisibleAndRestartIfNeeded(starting, configChanges, isTop,
                                 resumeNextActivity, r)) {
                             if (activityNdx >= activities.size()) {
@@ -2755,6 +2757,7 @@ final class ActivityStack {
                 // Don't do a starting window for mLaunchTaskBehind. More importantly make sure we
                 // tell WindowManager that r is visible even though it is at the back of the stack.
                 mWindowManager.setAppVisibility(r.appToken, true);
+                /**WB_ANDROID: 2019-03-28 1708 启动进程或者 Activity 的真正入口 */
                 ensureActivitiesVisibleLocked(null, 0, !PRESERVE_WINDOWS);
             } else if (SHOW_APP_STARTING_PREVIEW && doShow) {
                 // Figure out if we are transitioning from another activity that is

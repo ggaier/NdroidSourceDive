@@ -3483,6 +3483,9 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
     }
 
+    /**
+     * 启动进程.
+     */
     final ProcessRecord startProcessLocked(String processName,
             ApplicationInfo info, boolean knownToBeDead, int intentFlags,
             String hostingType, ComponentName hostingName, boolean allowWhileBooting,
@@ -3622,6 +3625,9 @@ public final class ActivityManagerService extends ActivityManagerNative
                 null /* entryPoint */, null /* entryPointArgs */);
     }
 
+    /**
+     * 真正的启动进程的方法. 
+     */
     private final void startProcessLocked(ProcessRecord app, String hostingType,
             String hostingNameStr, String abiOverride, String entryPoint, String[] entryPointArgs) {
         long startTime = SystemClock.elapsedRealtime();
@@ -3749,6 +3755,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Start proc: " +
                     app.processName);
             checkTime(startTime, "startProcess: asking zygote to start proc");
+            /**WB_ANDROID: 2019-03-28 1725 
+             * 这里真正的开始启动一个进程. 
+             */
             //启动进程, 一个进程的入口类是 ActivityThread.
             Process.ProcessStartResult startResult = Process.start(entryPoint,
                     app.processName, uid, uid, gids, debugFlags, mountExternal,

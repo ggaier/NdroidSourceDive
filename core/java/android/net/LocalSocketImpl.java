@@ -134,6 +134,9 @@ class LocalSocketImpl
         /** {@inheritDoc} */
         @Override
         public void write (byte[] b, int off, int len) throws IOException {
+            /**WB_ANDROID: 2019-03-28 1741 
+             * Zygote socket 开始启动进程
+             */
             synchronized (writeMonitor) {
                 FileDescriptor myFd = fd;
                 if (myFd == null) throw new IOException("socket closed");

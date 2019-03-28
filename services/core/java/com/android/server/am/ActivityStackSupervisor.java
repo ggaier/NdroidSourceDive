@@ -1379,6 +1379,7 @@ public final class ActivityStackSupervisor implements DisplayListener {
      */
     void startSpecificActivityLocked(ActivityRecord r,
             boolean andResume, boolean checkConfig) {
+        //判断 Activity 所在的应用的进程是否已经启动. 
         // Is this activity's application already running?
         ProcessRecord app = mService.getProcessRecordLocked(r.processName,
                 r.info.applicationInfo.uid, true);

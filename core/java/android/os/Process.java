@@ -555,6 +555,7 @@ public class Process {
      *
      * @throws ZygoteStartFailedEx if process start failed for any reason
      */
+    /**WB_ANDROID: 2019-03-28 1739 通过 Socket 来启动应用 */
     private static ProcessStartResult zygoteSendArgsAndGetResult(
             ZygoteState zygoteState, ArrayList<String> args)
             throws ZygoteStartFailedEx {
