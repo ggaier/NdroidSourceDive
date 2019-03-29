@@ -843,6 +843,9 @@ public final class ActivityStackSupervisor implements DisplayListener {
         return resumedActivity;
     }
 
+    /**WB_ANDROID: 2019-03-28 1758 
+     * 当应用首次启动的时候, 启动成功会执行这里, 并启动之前未启动的 Activity.
+     */
     boolean attachApplicationLocked(ProcessRecord app) throws RemoteException {
         final String processName = app.processName;
         boolean didSomething = false;
@@ -1124,6 +1127,9 @@ public final class ActivityStackSupervisor implements DisplayListener {
         }
     }
 
+    /**WB_ANDROID: 2019-03-29 1537 
+     * 根据 Intent, 获取被启动的 Activity 的信息.
+     */
     ActivityInfo resolveActivity(Intent intent, ResolveInfo rInfo, int startFlags,
             ProfilerInfo profilerInfo) {
         final ActivityInfo aInfo = rInfo != null ? rInfo.activityInfo : null;
@@ -1161,6 +1167,7 @@ public final class ActivityStackSupervisor implements DisplayListener {
         return resolveIntent(intent, resolvedType, userId, 0);
     }
 
+    /**WB_ANDROID: 2019-03-29 1541 根据 intent, 利用 PackageManager来获取关于本次 Intent 的信息 */
     ResolveInfo resolveIntent(Intent intent, String resolvedType, int userId, int flags) {
         try {
             return AppGlobals.getPackageManager().resolveIntent(intent, resolvedType,
@@ -1177,6 +1184,9 @@ public final class ActivityStackSupervisor implements DisplayListener {
         return resolveActivity(intent, rInfo, startFlags, profilerInfo);
     }
 
+    /**WB_ANDROID: 2019-03-28 1757 
+     * 当绑定进程成功后, 或者进程已经启动时, 在此处执行真正的启动 Activity 的方法. 
+     */
     final boolean realStartActivityLocked(ActivityRecord r, ProcessRecord app,
             boolean andResume, boolean checkConfig) throws RemoteException {
 
@@ -1192,6 +1202,7 @@ public final class ActivityStackSupervisor implements DisplayListener {
 
         if (andResume) {
             r.startFreezingScreenLocked(app, 0);
+            //这里设置App可见, 也是可以从这里优化应用的背景.
             mWindowManager.setAppVisibility(r.appToken, true);
 
             // schedule launch ticks to collect information about slow apps.

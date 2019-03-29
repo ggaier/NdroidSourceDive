@@ -1690,7 +1690,7 @@ final class ActivityStack {
      * Make sure that all activities that need to be visible (that is, they
      * currently can be seen by the user) actually are.
      */
-     /**WB_ANDROID: 2019-03-28 1710 启动 Activity 或者进程的真正入口 */
+     /**WB_ANDROID: 2019-03-28 1710 启动 Activity 或者进程 */
     final void ensureActivitiesVisibleLocked(ActivityRecord starting, int configChanges,
             boolean preserveWindows) {
         ActivityRecord top = topRunningActivityLocked();

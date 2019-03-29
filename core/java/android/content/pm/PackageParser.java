@@ -5507,6 +5507,7 @@ public class PackageParser {
         }
     }
 
+    /**WB_ANDROID: 2019-03-29 1548 这里是开始 */
     public static final ActivityInfo generateActivityInfo(Activity a, int flags,
             PackageUserState state, int userId) {
         if (a == null) return null;

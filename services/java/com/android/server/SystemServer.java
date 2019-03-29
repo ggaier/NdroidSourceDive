@@ -206,6 +206,9 @@ public final class SystemServer {
      * The main entry point from zygote.
      */
     public static void main(String[] args) {
+        /**WB_ANDROID: 2019-03-29 1145 
+         * 启动 SystemServer
+         */
         new SystemServer().run();
     }
 
@@ -321,6 +324,7 @@ public final class SystemServer {
             Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "StartServices");
             startBootstrapServices();
             startCoreServices();
+            //启动其他服务, 例如WindowManager
             startOtherServices();
         } catch (Throwable ex) {
             Slog.e("System", "******************************************");

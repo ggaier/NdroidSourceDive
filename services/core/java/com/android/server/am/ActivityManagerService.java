@@ -6575,6 +6575,8 @@ public final class ActivityManagerService extends ActivityManagerNative
 
         // See if the top visible activity is waiting to run in this process...
         if (normalMode) {
+            //如果应用是首次启动 Activity, 那么就会先启动应用进程, 然后再绑定应用进程, 
+            //再然后当绑定应用进程成功后, 就会判断是否需要启动之前的 Activity. 
             try {
                 if (mStackSupervisor.attachApplicationLocked(app)) {
                     didSomething = true;

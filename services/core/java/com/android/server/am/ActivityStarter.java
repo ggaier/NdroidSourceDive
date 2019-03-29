@@ -534,6 +534,7 @@ class ActivityStarter {
 
         try {
             mService.mWindowManager.deferSurfaceLayout();
+            /**WB_ANDROID: 2019-03-28 2221  */
             err = startActivityUnchecked(r, sourceRecord, voiceSession, voiceInteractor, startFlags,
                     true, options, inTask);
         } finally {
@@ -679,6 +680,9 @@ class ActivityStarter {
                 UserHandle.CURRENT);
     }
 
+    /**WB_ANDROID: 2019-03-29 1534 
+     * ActivityManagerService call this method: startActivityMayWait()
+     */
     final int startActivityMayWait(IApplicationThread caller, int callingUid,
             String callingPackage, Intent intent, String resolvedType,
             IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor,
@@ -697,7 +701,7 @@ class ActivityStarter {
         final Intent ephemeralIntent = new Intent(intent);
         // Don't modify the client's object!
         intent = new Intent(intent);
-
+        // 解析 Intent, 获取关于被启动的 Activity 的信息
         ResolveInfo rInfo = mSupervisor.resolveIntent(intent, resolvedType, userId);
         if (rInfo == null) {
             UserInfo userInfo = mSupervisor.getUserInfo(userId);
@@ -723,6 +727,7 @@ class ActivityStarter {
                 }
             }
         }
+        // 收集目标 Intent 的信息
         // Collect information about the target of the Intent.
         ActivityInfo aInfo = mSupervisor.resolveActivity(intent, rInfo, startFlags, profilerInfo);
 
@@ -823,6 +828,7 @@ class ActivityStarter {
             }
 
             final ActivityRecord[] outRecord = new ActivityRecord[1];
+            //启动 activity
             int res = startActivityLocked(caller, intent, ephemeralIntent, resolvedType,
                     aInfo, rInfo, voiceSession, voiceInteractor,
                     resultTo, resultWho, requestCode, callingPid,

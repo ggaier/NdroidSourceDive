@@ -1681,6 +1681,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                     Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 } break;
                 case CHECK_PENDING_VERIFICATION: {
+                    //安装应用的第二步是开始检验应用的agent 的安全资格.
                     final int verificationId = msg.arg1;
                     final PackageVerificationState state = mPendingVerification.get(verificationId);
 
@@ -3630,6 +3631,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         return updateFlagsForComponent(flags, userId, cookie);
     }
 
+    /**WB_ANDROID: 2019-03-29 1546 获取显式意图的信息 */
     @Override
     public ActivityInfo getActivityInfo(ComponentName component, int flags, int userId) {
         if (!sUserManager.exists(userId)) return null;
@@ -4861,6 +4863,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
     }
 
+    /**WB_ANDROID: 2019-03-29 1544 PackageManager获取 Intent 的信息 */
     @Override
     public ResolveInfo resolveIntent(Intent intent, String resolvedType,
             int flags, int userId) {
@@ -12307,6 +12310,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
     }
 
+    /**WB_ANDROID: 2019-03-29 1557 这里也许是安装应用的过程, 待确认. */
     private void processPendingInstall(final InstallArgs args, final int currentStatus) {
         // Queue up an async operation since the package installation may take a little while.
         mHandler.post(new Runnable() {
@@ -12843,6 +12847,7 @@ public class PackageManagerService extends IPackageManager.Stub {
          * policy if needed and then create install arguments based
          * on the install location.
          */
+        /**WB_ANDROID: 2019-03-29 1605 首先复制安装包 */
         public void handleStartCopy() throws RemoteException {
             int ret = PackageManager.INSTALL_SUCCEEDED;
 
@@ -14833,6 +14838,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
     }
 
+    /**WB_ANDROID: 2019-03-29 1559 开始安装应用. */
     private void installPackageLI(InstallArgs args, PackageInstalledInfo res) {
         final int installFlags = args.installFlags;
         final String installerPackageName = args.installerPackageName;

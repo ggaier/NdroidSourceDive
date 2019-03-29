@@ -4467,6 +4467,7 @@ public class WindowManagerService extends IWindowManager.Stub
         AppWindowToken wtoken;
 
         synchronized(mWindowMap) {
+            //获取到 App 的 windowtoken.
             wtoken = findAppWindowToken(token);
             if (wtoken == null) {
                 Slog.w(TAG_WM, "Attempted to set visibility of non-existing app token: " + token);
@@ -8075,6 +8076,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 } break;
 
                 case DO_TRAVERSAL: {
+                    //准备刷新 window
                     synchronized(mWindowMap) {
                         mWindowPlacerLocked.performSurfacePlacement();
                     }
