@@ -836,7 +836,7 @@ public final class ActivityThread {
                 Bundle coreSettings) {
 
             if (services != null) {
-                // ActivityManagerService 启动的基本服务, 可能报货
+                // ActivityManagerService 启动的基本服务, 包括
                 // Setup the service cache in the ServiceManager
                 ServiceManager.initServiceCache(services);
             }
@@ -2979,6 +2979,7 @@ public final class ActivityThread {
         return sCurrentBroadcastIntent.get();
     }
 
+    //处理 BroadcastReceiver.
     private void handleReceiver(ReceiverData data) {
         // If we are getting ready to gc after going to the background, well
         // we are back active so skip it.
@@ -2996,6 +2997,7 @@ public final class ActivityThread {
             data.intent.setExtrasClassLoader(cl);
             data.intent.prepareToEnterProcess();
             data.setExtrasClassLoader(cl);
+            //通过反射获取到一个 BroadcastReceiver 实例. 
             receiver = (BroadcastReceiver) cl.loadClass(component).newInstance();
         } catch (Exception e) {
             if (DEBUG_BROADCAST)

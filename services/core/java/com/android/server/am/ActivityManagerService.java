@@ -577,6 +577,7 @@ public final class ActivityManagerService extends ActivityManagerNative
     BroadcastStats mLastBroadcastStats;
     BroadcastStats mCurBroadcastStats;
 
+    //所使用的广播队列. 
     BroadcastQueue broadcastQueueForIntent(Intent intent) {
         final boolean isFg = (intent.getFlags() & Intent.FLAG_RECEIVER_FOREGROUND) != 0;
         if (DEBUG_BROADCAST_BACKGROUND) Slog.i(TAG_BROADCAST,
@@ -17634,6 +17635,9 @@ public final class ActivityManagerService extends ActivityManagerNative
         return INTENT_REMOTE_BUGREPORT_FINISHED.equals(intent.getAction());
     }
 
+    /**WB_ANDROID: 2019-04-01 1730 
+     * 发送广播的代码, 开始.
+     */
     final int broadcastIntentLocked(ProcessRecord callerApp,
             String callerPackage, Intent intent, String resolvedType,
             IIntentReceiver resultTo, int resultCode, String resultData,
@@ -18097,6 +18101,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         // Need to resolve the intent to interested receivers...
         if ((intent.getFlags()&Intent.FLAG_RECEIVER_REGISTERED_ONLY)
                  == 0) {
+                     //收集注册的 RegisteredReceiver.
             receivers = collectReceiverComponents(intent, resolvedType, callingUid, users);
         }
         if (intent.getComponent() == null) {
@@ -18133,6 +18138,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             // If we are not serializing this broadcast, then send the
             // registered receivers separately so they don't wait for the
             // components to be launched.
+            // 产检一个广播队列, 开始发送并处理广播.
             final BroadcastQueue queue = broadcastQueueForIntent(intent);
             BroadcastRecord r = new BroadcastRecord(queue, intent, callerApp,
                     callerPackage, callingPid, callingUid, resolvedType, requiredPermissions,
@@ -18222,6 +18228,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
         if ((receivers != null && receivers.size() > 0)
                 || resultTo != null) {
+                    //创建一个广播队列, 然后发送广播.
             BroadcastQueue queue = broadcastQueueForIntent(intent);
             BroadcastRecord r = new BroadcastRecord(queue, intent, callerApp,
                     callerPackage, callingPid, callingUid, resolvedType,

@@ -396,6 +396,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         }
     }
 
+    /**WB_ANDROID: 2019-04-01 1106 
+     * 对外提供一个 stageDir, 当应用安装的时候, 把应用包拷贝到这个文件加下. 
+     */
     @Override
     public ParcelFileDescriptor openWrite(String name, long offsetBytes, long lengthBytes) {
         try {

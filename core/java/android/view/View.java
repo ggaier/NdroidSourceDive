@@ -13536,11 +13536,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
     void invalidateInternal(int l, int t, int r, int b, boolean invalidateCache,
             boolean fullInvalidate) {
+        //invalidate GhostView
         if (mGhostView != null) {
             mGhostView.invalidate(true);
             return;
         }
-
+        //不在动画中的 View, 不可见的 View 不应该被重绘, 所以这里跳过
         if (skipInvalidate()) {
             return;
         }
@@ -13561,12 +13562,14 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 mPrivateFlags &= ~PFLAG_DRAWING_CACHE_VALID;
             }
 
+            //传递脏区到父布局中.
             // Propagate the damage rectangle to the parent view.
             final AttachInfo ai = mAttachInfo;
             final ViewParent p = mParent;
             if (p != null && ai != null && l < r && t < b) {
                 final Rect damage = ai.mTmpInvalRect;
                 damage.set(l, t, r, b);
+                //看这里, 传递到 ViewGroup 了.
                 p.invalidateChild(this, damage);
             }
 
@@ -22934,6 +22937,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
          * Temporary for use in computing invalidate rectangles while
          * calling up the hierarchy.
          */
+        /**WB_ANDROID: 2019-04-11 2238 临时存储 view 的脏区大小的变量 */
         final Rect mTmpInvalRect = new Rect();
 
         /**

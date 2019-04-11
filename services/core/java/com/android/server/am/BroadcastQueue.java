@@ -59,6 +59,9 @@ import static com.android.server.am.ActivityManagerDebugConfig.*;
  * We keep two broadcast queues and associated bookkeeping, one for those at
  * foreground priority, and one for normal (background-priority) broadcasts.
  */
+/**WB_ANDROID: 2019-04-01 1726 
+ * 真正的发送广播的队列. 通过把广播加入到广播队列中, 然后通过 handler 处理广播.
+ */
 public final class BroadcastQueue {
     private static final String TAG = "BroadcastQueue";
     private static final String TAG_MU = TAG + POSTFIX_MU;
@@ -158,6 +161,9 @@ public final class BroadcastQueue {
 
     final BroadcastHandler mHandler;
 
+    /**WB_ANDROID: 2019-04-01 1729 
+     * 在 ServiceThread 线程处理广播.
+     */
     private final class BroadcastHandler extends Handler {
         public BroadcastHandler(Looper looper) {
             super(looper, null, true);
@@ -166,6 +172,7 @@ public final class BroadcastQueue {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
+                //发送广播的处理通知.
                 case BROADCAST_INTENT_MSG: {
                     if (DEBUG_BROADCAST) Slog.v(
                             TAG_BROADCAST, "Received BROADCAST_INTENT_MSG");
@@ -251,6 +258,7 @@ public final class BroadcastQueue {
         return false;
     }
 
+    //发送广播
     private final void processCurBroadcastLocked(BroadcastRecord r,
             ProcessRecord app) throws RemoteException {
         if (DEBUG_BROADCAST)  Slog.v(TAG_BROADCAST,
@@ -280,6 +288,7 @@ public final class BroadcastQueue {
                     + ": " + r);
             mService.notifyPackageUse(r.intent.getComponent().getPackageName(),
                                       PackageManager.NOTIFY_PACKAGE_USE_BROADCAST_RECEIVER);
+            //发送 broadcast 到 applicationthread 中. 然后在应用的主线程进行处理.
             app.thread.scheduleReceiver(new Intent(r.intent), r.curReceiver,
                     mService.compatibilityInfoForPackageLocked(r.curReceiver.applicationInfo),
                     r.resultCode, r.resultData, r.resultExtras, r.ordered, r.userId,
@@ -460,6 +469,7 @@ public final class BroadcastQueue {
             }
         }
     }
+
 
     void performReceiveLocked(ProcessRecord app, IIntentReceiver receiver,
             Intent intent, int resultCode, String data, Bundle extras,
@@ -755,6 +765,7 @@ public final class BroadcastQueue {
                 .sendToTarget();
     }
 
+    //处理下一个广播, 在这个过程中会判断广播的处理是否超时, 弹出应用无相应的对话框.
     final void processNextBroadcast(boolean fromMsg) {
         synchronized(mService) {
             BroadcastRecord r;
@@ -928,11 +939,12 @@ public final class BroadcastQueue {
                 if (DEBUG_BROADCAST_LIGHT) Slog.v(TAG_BROADCAST, "Processing ordered broadcast ["
                         + mQueueName + "] " + r);
             }
-            if (! mPendingBroadcastTimeoutMessage) {
+            if (!mPendingBroadcastTimeoutMessage) {
                 long timeoutTime = r.receiverTime + mTimeoutPeriod;
                 if (DEBUG_BROADCAST) Slog.v(TAG_BROADCAST,
                         "Submitting BROADCAST_TIMEOUT_MSG ["
                         + mQueueName + "] for " + r + " at " + timeoutTime);
+                        //发送广播处理超时
                 setBroadcastTimeoutLocked(timeoutTime);
             }
 

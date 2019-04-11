@@ -806,6 +806,9 @@ public class PackageParser {
      * Note that this <em>does not</em> perform signature verification; that
      * must be done separately in {@link #collectCertificates(Package, int)}.
      */
+    /**WB_ANDROID: 2019-04-01 1646 
+     * 解析应用的安装包. 
+     */
     private Package parseClusterPackage(File packageDir, int flags) throws PackageParserException {
         final PackageLite lite = parseClusterPackageLite(packageDir, 0);
 
@@ -814,6 +817,7 @@ public class PackageParser {
                     "Not a coreApp: " + packageDir);
         }
 
+        //加载应用的资源文件
         final AssetManager assets = new AssetManager();
         try {
             // Load the base and all splits into the AssetManager
@@ -827,6 +831,7 @@ public class PackageParser {
             }
 
             final File baseApk = new File(lite.baseCodePath);
+            //解析应用
             final Package pkg = parseBaseApk(baseApk, assets, flags);
             if (pkg == null) {
                 throw new PackageParserException(INSTALL_PARSE_FAILED_NOT_APK,

@@ -59,6 +59,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * 这个服务的目的是为了防止在可移除的存储区域中的文件被系统 kill 掉.
  * Service that offers to inspect and copy files that may reside on removable
  * storage. This is designed to prevent the system process from holding onto
  * open files that cause the kernel to kill it when the underlying device is

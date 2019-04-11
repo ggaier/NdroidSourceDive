@@ -560,6 +560,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub {
         });
     }
 
+    /**WB_ANDROID: 2019-04-01 1045 创建一个安装会话 */
     @Override
     public int createSession(SessionParams params, String installerPackageName, int userId) {
         try {
@@ -740,6 +741,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub {
         }
     }
 
+    /**WB_ANDROID: 2019-04-01 1054 开启安装会话 */
     @Override
     public IPackageInstallerSession openSession(int sessionId) {
         try {

@@ -1367,6 +1367,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         void doHandleMessage(Message msg) {
             switch (msg.what) {
                 case INIT_COPY: {
+                    //应用安装的第一步, 当应用拷贝完成后, 判断 DefaultContainerService 是否 bind成功.
                     HandlerParams params = (HandlerParams) msg.obj;
                     int idx = mPendingInstalls.size();
                     if (DEBUG_INSTALL) Slog.i(TAG, "init_copy idx=" + idx + ": " + params);
@@ -1404,6 +1405,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                     break;
                 }
                 case MCS_BOUND: {
+                    //应用安装的第二步, 服务绑定之后, 开始准备复制应用到安装地址.
                     if (DEBUG_INSTALL) Slog.i(TAG, "mcs_bound");
                     if (msg.obj != null) {
                         mContainerService = (IMediaContainerService) msg.obj;
@@ -1492,6 +1494,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                     break;
                 }
                 case MCS_UNBIND: {
+                    //安装应用的第四步, 验证完应用的代理商, 并复制应用到安装区域后, unbind 
+                    // DefContainerService
                     // If there is no actual work left, then time to unbind.
                     if (DEBUG_INSTALL) Slog.i(TAG, "mcs_unbind");
 
@@ -1584,6 +1588,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                     startCleaningPackages();
                 } break;
                 case POST_INSTALL: {
+                    //应用安装的第五步, 也是应用安装的最后一步.
                     if (DEBUG_INSTALL) Log.v(TAG, "Handling post-install for " + msg.arg1);
 
                     PostInstallData data = mRunningInstalls.get(msg.arg1);
@@ -1681,7 +1686,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                     Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 } break;
                 case CHECK_PENDING_VERIFICATION: {
-                    //安装应用的第二步是开始检验应用的agent 的安全资格.
+                    // 安装应用的第三步是开始检验应用的agent 的安全资格.
+                    // 也是在开始复制应用到私有的 data 区的过程之一.
                     final int verificationId = msg.arg1;
                     final PackageVerificationState state = mPendingVerification.get(verificationId);
 
@@ -1815,6 +1821,9 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
     }
 
+    /**WB_ANDROID: 2019-04-01 1709 安装应用的第五步, 做一些安装后的处理.
+     * 比如批准应用的权限. 
+     */
     private void handlePackagePostInstall(PackageInstalledInfo res, boolean grantPermissions,
             boolean killApp, String[] grantedPermissions,
             boolean launchedForRestore, String installerPackage,
@@ -1875,7 +1884,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                 }
             }
 
-            // Send installed broadcasts if the install/update is not ephemeral
+            // Send installed broadcasts if the install/update is not ephemeral.
+            //发送应用安装或者更新的广播. 
             if (!isEphemeral(res.pkg)) {
                 mProcessLoggingHandler.invalidateProcessLoggingBaseApkHash(res.pkg.baseCodePath);
 
@@ -11549,6 +11559,11 @@ public class PackageManagerService extends IPackageManager.Stub {
         mHandler.sendMessage(msg);
     }
 
+    /**WB_ANDROID: 2019-04-01 1100 
+     * 1. PackageInstallSession结束之后: 也就是把应用安装包复制到PackageInstallSession提供的 stage 文件
+     * 夹后, 会通过Commit方法, 进行应用的安装. 
+     * 2. 也就是 installStage()方法, 进行应用的安装. 
+     * */
     void installStage(String packageName, File stagedDir, String stagedCid,
             IPackageInstallObserver2 observer, PackageInstaller.SessionParams sessionParams,
             String installerPackageName, int installerUid, UserHandle user,
@@ -11569,6 +11584,9 @@ public class PackageManagerService extends IPackageManager.Stub {
             origin = OriginInfo.fromStagedContainer(stagedCid);
         }
 
+        /**WB_ANDROID: 2019-04-01 1123 
+         * 发送一个 copy 命令
+         */
         final Message msg = mHandler.obtainMessage(INIT_COPY);
         final InstallParams params = new InstallParams(origin, null, observer,
                 sessionParams.installFlags, installerPackageName, sessionParams.volumeUuid,
@@ -12310,7 +12328,9 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
     }
 
-    /**WB_ANDROID: 2019-03-29 1557 这里也许是安装应用的过程, 待确认. */
+    /**WB_ANDROID: 2019-03-29 1557 安装应用的第五步, 当 DefContainerService unbind之后, 
+     * 此时应用也已经拷贝到安装地址, 开始进行后续的安装步骤.
+     */
     private void processPendingInstall(final InstallArgs args, final int currentStatus) {
         // Queue up an async operation since the package installation may take a little while.
         mHandler.post(new Runnable() {
@@ -12323,6 +12343,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                 res.pkg = null;
                 res.removedInfo = null;
                 if (res.returnCode == PackageManager.INSTALL_SUCCEEDED) {
+                    //如果应用已经安装过
                     args.doPreInstall(res.returnCode);
                     synchronized (mInstallLock) {
                         installPackageTracedLI(args, res);
@@ -12330,6 +12351,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                     args.doPostInstall(res.returnCode, res.uid);
                 }
 
+                //恢复应用的数据.
                 // A restore should be performed at this point if (a) the install
                 // succeeded, (b) the operation is not an update, and (c) the new
                 // package has not opted out of backup participation.
@@ -12847,7 +12869,9 @@ public class PackageManagerService extends IPackageManager.Stub {
          * policy if needed and then create install arguments based
          * on the install location.
          */
-        /**WB_ANDROID: 2019-03-29 1605 首先复制安装包 */
+        /**WB_ANDROID: 2019-03-29 1605 再次复制安装包
+         * 把已经复制到 StageDir 中的安装包复制到安装区域, 也就是应用的内部 data 区域.
+         */
         public void handleStartCopy() throws RemoteException {
             int ret = PackageManager.INSTALL_SUCCEEDED;
 
@@ -13858,6 +13882,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                     params.traceMethod, params.traceCookie, params.certificates);
         }
 
+        //复制安装包到应用私有的data 区域.
         int copyApk(IMediaContainerService imcs, boolean temp) {
             if (DEBUG_INSTALL) Slog.d(TAG, "Moving " + move.packageName + " from "
                     + move.fromUuid + " to " + move.toUuid);
@@ -14081,6 +14106,7 @@ public class PackageManagerService extends IPackageManager.Stub {
 
     /*
      * Install a non-existing package.
+     * 安装新的应用包. 
      */
     private void installNewPackageLIF(PackageParser.Package pkg, final int policyFlags,
             int scanFlags, UserHandle user, String installerPackageName, String volumeUuid,
@@ -14838,7 +14864,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
     }
 
-    /**WB_ANDROID: 2019-03-29 1559 开始安装应用. */
+    /**WB_ANDROID: 2019-03-29 1559 开始解析安装包, 安装应用. */
     private void installPackageLI(InstallArgs args, PackageInstalledInfo res) {
         final int installFlags = args.installFlags;
         final String installerPackageName = args.installerPackageName;
@@ -14886,6 +14912,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "parsePackage");
         final PackageParser.Package pkg;
         try {
+            //解析安装包
             pkg = pp.parsePackage(tmpPackageFile, parseFlags);
         } catch (PackageParserException e) {
             res.setError("Failed parse during installPackageLI", e);
