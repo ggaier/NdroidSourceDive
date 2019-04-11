@@ -5159,7 +5159,6 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     @Override
     public final void invalidateChild(View child, final Rect dirty) {
         ViewParent parent = this;
-
         final AttachInfo attachInfo = mAttachInfo;
         if (attachInfo != null) {
             // If the child is drawing an animation, we want to copy this flag onto

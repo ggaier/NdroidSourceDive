@@ -543,6 +543,9 @@ public final class ViewRootImpl implements ViewParent,
     /**
      * We have one child
      */
+    /**WB_ANDROID: 2019-04-11 2253 WindowManagerGlobal准备添加 View 的时候, 
+     * 会首先创建一个 ViewRootImpl 实例, 然后把 View 加到该实例中.
+     */
     public void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) {
         synchronized (this) {
             if (mView == null) {
@@ -726,7 +729,7 @@ public final class ViewRootImpl implements ViewParent,
                     mInputEventReceiver = new WindowInputEventReceiver(mInputChannel,
                             Looper.myLooper());
                 }
-
+                //这里对用户布局中的父布局设置一个 Parent, 也就是ViewRootImpl.
                 view.assignParent(this);
                 mAddedTouchMode = (res & WindowManagerGlobal.ADD_FLAG_IN_TOUCH_MODE) != 0;
                 mAppVisible = (res & WindowManagerGlobal.ADD_FLAG_APP_VISIBLE) != 0;
@@ -1072,6 +1075,7 @@ public final class ViewRootImpl implements ViewParent,
 
     /**
      * WB_ANDROID: 2018-07-02 0936 调用该方法的时候, scheduleTraversals.
+     * 而这个方法也是一开始 View invalidate 的时候, 最终会执行到的代码.
      */
     @Override
     public ViewParent invalidateChildInParent(int[] location, Rect dirty) {
@@ -1121,6 +1125,7 @@ public final class ViewRootImpl implements ViewParent,
         if (!intersected) {
             localDirty.setEmpty();
         }
+        //如果 rootView View 和脏区有交界, 或者正在做动画, 那么启动scheduleTraversals
         if (!mWillDrawSoon && (intersected || mIsAnimating)) {
             scheduleTraversals();
         }
@@ -1237,6 +1242,9 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
+    /**WB_ANDROID: 2019-04-11 2318 
+     * 启动一次布局的遍历. 当 invalidate 开启的时候.
+     */
     void doTraversal() {
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
@@ -1436,9 +1444,10 @@ public final class ViewRootImpl implements ViewParent,
         return (int) (displayMetrics.density * dip + 0.5f);
     }
 
-    /**
-     * 
+    /**WB_ANDROID: 2019-04-11 2319 
+     * 到这里.. 
      */
+    // TO BE CONTINUE 2019-04-11 2325
     private void performTraversals() {
         // cache mView since it is used so much below...
         final View host = mView;

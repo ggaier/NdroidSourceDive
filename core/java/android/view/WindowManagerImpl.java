@@ -87,6 +87,11 @@ public final class WindowManagerImpl implements WindowManager {
         mDefaultToken = token;
     }
 
+    /**WB_ANDROID: 2019-04-11 2308 
+     * 这里是一切 View 开始的地方, 当 Activity 中的 PhoneWindow 调用添加 View 方法的时候, 
+     * 或者是 Dialog 添加 View 方法的时候, 最终都是有 mGlobal(WindowManagerGlobal)来创建一个
+     * ViewRootImpl, 并加跟布局添加到其中.
+     */
     @Override
     public void addView(@NonNull View view, @NonNull ViewGroup.LayoutParams params) {
         applyDefaultToken(params);

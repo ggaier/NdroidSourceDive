@@ -14884,6 +14884,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * Caller is responsible for calling requestLayout if necessary.
      * (This allows addViewInLayout to not request a new layout.)
      */
+    /**WB_ANDROID: 2019-04-11 2248 给一个 View 设置 ParentView */
     void assignParent(ViewParent parent) {
         if (mParent == null) {
             mParent = parent;

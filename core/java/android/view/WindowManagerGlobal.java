@@ -260,6 +260,11 @@ public final class WindowManagerGlobal {
         return null;
     }
 
+    /**WB_ANDROID: 2019-04-11 2251 
+     * 向 Window 中添加 View 的代码, 这也是一个 Window 开始有布局的开始. 在添加 View 的时候, 
+     * 会首先创建一个 ViewRootImpl, 并把 view 添加到 ViewRootImpl中.
+     * @see ViewRootImpl#setView
+     */
     public void addView(View view, ViewGroup.LayoutParams params,
             Display display, Window parentWindow) {
         if (view == null) {
@@ -303,7 +308,7 @@ public final class WindowManagerGlobal {
                 };
                 SystemProperties.addChangeCallback(mSystemPropertyUpdater);
             }
-
+            //不允许重复添加同一个 View.
             int index = findViewLocked(view, false);
             if (index >= 0) {
                 if (mDyingViews.contains(view)) {
