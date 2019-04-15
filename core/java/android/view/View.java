@@ -15366,6 +15366,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     /**
      * @param info the {@link android.view.View.AttachInfo} to associated with
      *        this view
+     * 所谓 AttachInfo 就是这个 View 添加到 Window 上时附带的一些信息.
+     */
+    /**WB_ANDROID: 2019-04-14 2236 
+     * ViewRootImpl 在 doTraversal的时候, 如果 View 是第一次绘制, 会执行该方法.
+     * 同时通知被绘制的 View 的 onAttachedToWindow 的生命周期方法.
      */
     void dispatchAttachedToWindow(AttachInfo info, int visibility) {
         mAttachInfo = info;
@@ -15392,6 +15397,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             mRunQueue = null;
         }
         performCollectViewAttributes(mAttachInfo, visibility);
+        //这里开始调用 View.onAttached.
         onAttachedToWindow();
 
         ListenerInfo li = mListenerInfo;
@@ -15409,6 +15415,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         int vis = info.mWindowVisibility;
         if (vis != GONE) {
+            //修改 WindowVisibilityChanged方法.
             onWindowVisibilityChanged(vis);
             if (isShown()) {
                 // Calling onVisibilityChanged directly here since the subtree will also
@@ -22136,6 +22143,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             if (sUseBrokenMakeMeasureSpec) {
                 return size + mode;
             } else {
+                //把 mode_mask 取反, 然后和 size 进行与运算.
                 return (size & ~MODE_MASK) | (mode & MODE_MASK);
             }
         }

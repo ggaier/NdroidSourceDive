@@ -1323,6 +1323,7 @@ public final class ViewRootImpl implements ViewParent,
                 + "x" + desiredWindowHeight + "...");
 
         boolean goodMeasure = false;
+        //如果根布局决定使用 WrapContent.
         if (lp.width == ViewGroup.LayoutParams.WRAP_CONTENT) {
             // On large screens, we don't want to allow dialogs to just
             // stretch to fill the entire width of the screen to display
@@ -1332,11 +1333,13 @@ public final class ViewRootImpl implements ViewParent,
             res.getValue(com.android.internal.R.dimen.config_prefDialogWidth, mTmpValue, true);
             int baseSize = 0;
             if (mTmpValue.type == TypedValue.TYPE_DIMENSION) {
+                //获取出偏爱的 Window 大小.
                 baseSize = (int)mTmpValue.getDimension(packageMetrics);
             }
             if (DEBUG_DIALOG) Log.v(mTag, "Window " + mView + ": baseSize=" + baseSize
                     + ", desiredWindowWidth=" + desiredWindowWidth);
             if (baseSize != 0 && desiredWindowWidth > baseSize) {
+                //lp.width is always WRAP_CONTENT
                 childWidthMeasureSpec = getRootMeasureSpec(baseSize, lp.width);
                 childHeightMeasureSpec = getRootMeasureSpec(desiredWindowHeight, lp.height);
                 performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -1445,11 +1448,12 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     /**WB_ANDROID: 2019-04-11 2319 
-     * 到这里.. 
+     * 当 WindowManagerGlobal调用 ViewRootImpl.setView方法的时候, 会开始真正的
+     * 遍历布局. 
      */
-    // TO BE CONTINUE 2019-04-11 2325
     private void performTraversals() {
         // cache mView since it is used so much below...
+        //这个 View 就是 ViewRootImpl 的唯一 child, 也是用户的布局.
         final View host = mView;
 
         if (DBG) {
@@ -1472,6 +1476,7 @@ public final class ViewRootImpl implements ViewParent,
         int desiredWindowHeight;
 
         final int viewVisibility = getHostVisibility();
+        //不是第一次, 并且当前的 visibility 不等于新的 visibility.
         final boolean viewVisibilityChanged = !mFirst
                 && (mViewVisibility != viewVisibility || mNewSurfaceNeeded);
 
@@ -1499,13 +1504,16 @@ public final class ViewRootImpl implements ViewParent,
         mWindowAttributesChangesFlag = 0;
 
         Rect frame = mWinFrame;
+        // NOTE: 注意只有当 ViewRootImpl 第一次构建的时候, 才会把 mFirst 设置为 true
+        // 一旦第一次执行完该方法之后, mFirst 就不会是 true 了.
         if (mFirst) {
             mFullRedrawNeeded = true;
             mLayoutRequested = true;
-
+            //第一次绘制?
             if (shouldUseDisplaySize(lp)) {
                 // NOTE -- system code, won't try to do compat mode.
                 Point size = new Point();
+                //这里的计算是不减去屏幕上的window decor 的. 
                 mDisplay.getRealSize(size);
                 desiredWindowWidth = size.x;
                 desiredWindowHeight = size.y;
@@ -1528,8 +1536,11 @@ public final class ViewRootImpl implements ViewParent,
             if (mViewLayoutDirectionInitial == View.LAYOUT_DIRECTION_INHERIT) {
                 host.setLayoutDirection(mLastConfiguration.getLayoutDirection());
             }
+            // 这里当是第一次绘制的时候, 通知用户的根布局, viewAttached. 所以这一步是早于
+            //真正的开始测量布局大小的时候的.
             host.dispatchAttachedToWindow(mAttachInfo, 0);
             mAttachInfo.mTreeObserver.dispatchOnWindowAttachedChange(true);
+            //如果是 View 第一次绘制的话, 会 dispatchApplyInsets.
             dispatchApplyInsets(host);
             //Log.i(mTag, "Screen on initialized: " + attachInfo.mKeepScreenOn);
 
@@ -1546,6 +1557,8 @@ public final class ViewRootImpl implements ViewParent,
 
         if (viewVisibilityChanged) {
             mAttachInfo.mWindowVisibility = viewVisibility;
+            // 如果是可见性发生变化的话, 会触发该方法. 如果是第一次的话, 可见性的分发
+            // 则由前边的host.dispatchAttachedToWindow方法完成.
             host.dispatchWindowVisibilityChanged(viewVisibility);
             host.dispatchVisibilityAggregated(viewVisibility == View.VISIBLE);
             if (viewVisibility != View.VISIBLE || mNewSurfaceNeeded) {
@@ -1553,6 +1566,7 @@ public final class ViewRootImpl implements ViewParent,
                 destroyHardwareResources();
             }
             if (viewVisibility == View.GONE) {
+                //从这里可以看到, 如果是 View 不等于 Gone, 那么就可以获取到焦点.
                 // After making a window gone, we will count it as being
                 // shown for the first time the next time it gets focus.
                 mHasHadWindowFocus = false;
@@ -1619,6 +1633,7 @@ public final class ViewRootImpl implements ViewParent,
             }
 
             // Ask host how big it wants to be
+            // 确定根布局的大小.
             windowSizeMayChange |= measureHierarchy(host, lp, res,
                     desiredWindowWidth, desiredWindowHeight);
         }
@@ -1667,6 +1682,7 @@ public final class ViewRootImpl implements ViewParent,
                     & WindowManager.LayoutParams.FLAG_LAYOUT_IN_OVERSCAN) != 0;
         }
 
+        //requestFitSystemWindows()方法会把该标志位设置为 true.
         if (mApplyInsetsRequested) {
             mApplyInsetsRequested = false;
             mLastOverscanRequested = mAttachInfo.mOverscanRequested;
@@ -1675,6 +1691,7 @@ public final class ViewRootImpl implements ViewParent,
                 // Short-circuit catching a new layout request here, so
                 // we don't need to go through two layout passes when things
                 // change due to fitting system windows, which can happen a lot.
+                // 再次测量一下根布局想要的大小.
                 windowSizeMayChange |= measureHierarchy(host, lp,
                         mView.getContext().getResources(),
                         desiredWindowWidth, desiredWindowHeight);
@@ -1687,7 +1704,7 @@ public final class ViewRootImpl implements ViewParent,
             // layout pass.
             mLayoutRequested = false;
         }
-
+        
         boolean windowShouldResize = layoutRequested && windowSizeMayChange
             && ((mWidth != host.getMeasuredWidth() || mHeight != host.getMeasuredHeight())
                 || (lp.width == ViewGroup.LayoutParams.WRAP_CONTENT &&
@@ -1768,6 +1785,7 @@ public final class ViewRootImpl implements ViewParent,
                         + " outsets=" + mPendingOutsets.toShortString()
                         + " surface=" + mSurface);
 
+                //如果configration发生变化, 也是在下一次 performTraversal的时候更新.
                 if (mPendingConfiguration.seq != 0) {
                     if (DEBUG_CONFIGURATION) Log.v(mTag, "Visible with new config: "
                             + mPendingConfiguration);
@@ -2036,6 +2054,7 @@ public final class ViewRootImpl implements ViewParent,
                             + " framesChanged=" + framesChanged);
 
                      // Ask host how big it wants to be
+                     //这里确定根布局想要有多大.
                     performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);
 
                     // Implementation of weights from WindowManager.LayoutParams
@@ -2044,7 +2063,8 @@ public final class ViewRootImpl implements ViewParent,
                     int width = host.getMeasuredWidth();
                     int height = host.getMeasuredHeight();
                     boolean measureAgain = false;
-
+                    //如果有权重比, 那么再重新 Measure 一次. 这时使用的是 MeasureSpec.EXACTLY
+                    // mode. 
                     if (lp.horizontalWeight > 0.0f) {
                         width += (int) ((mWidth - width) * lp.horizontalWeight);
                         childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(width,
@@ -2283,6 +2303,7 @@ public final class ViewRootImpl implements ViewParent,
     private void performMeasure(int childWidthMeasureSpec, int childHeightMeasureSpec) {
         Trace.traceBegin(Trace.TRACE_TAG_VIEW, "measure");
         try {
+            //开始 Mesure 根布局.
             mView.measure(childWidthMeasureSpec, childHeightMeasureSpec);
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_VIEW);
@@ -3402,6 +3423,7 @@ public final class ViewRootImpl implements ViewParent,
     private final static int MSG_REQUEST_KEYBOARD_SHORTCUTS = 26;
     private final static int MSG_UPDATE_POINTER_ICON = 27;
 
+    //这是一个主线程的 Handler.
     final class ViewRootHandler extends Handler {
         @Override
         public String getMessageName(Message message) {
