@@ -16020,6 +16020,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     && !mRecreateDisplayList) {
                 mPrivateFlags |= PFLAG_DRAWN | PFLAG_DRAWING_CACHE_VALID;
                 mPrivateFlags &= ~PFLAG_DIRTY_MASK;
+                //如果这个 view 开启了硬件加速, 并且没有被调用invalidate()方法, 
+                //那么就会把 getDisplayList()的方法分发到其他的子 View 中.
+                //而这个 View 本身只是更新了 RenderNode 的一些property信息.
+                // 比如setRotation()
                 dispatchGetDisplayList();
 
                 return renderNode; // no work needed
@@ -19813,6 +19817,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @see android.view.View.MeasureSpec#getSize(int)
      */
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //所以一个 View 的大小会根据 measureSpec 来确定. 如果是wrapContent的话, 
+        //那就会返回一个 minWidth 和 mBackground的宽度中的较大值. 
         setMeasuredDimension(getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec),
                 getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec));
     }

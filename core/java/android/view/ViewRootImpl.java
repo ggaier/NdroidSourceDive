@@ -177,6 +177,10 @@ public final class ViewRootImpl implements ViewParent,
 
     final WindowLeaked mLocation;
 
+    /**WB_ANDROID: 2019-04-15 2356 这里的布局中的信息,
+     * 最终也是有setView方法赋值的, 而 setView 方法中的参数,
+     * 则是由WindowManagerGlobal而来, 也就是用户在 addView 的时候所使用的布局参数.
+     */
     final WindowManager.LayoutParams mWindowAttributes = new WindowManager.LayoutParams();
 
     final W mWindow;
@@ -1704,7 +1708,7 @@ public final class ViewRootImpl implements ViewParent,
             // layout pass.
             mLayoutRequested = false;
         }
-        
+
         boolean windowShouldResize = layoutRequested && windowSizeMayChange
             && ((mWidth != host.getMeasuredWidth() || mHeight != host.getMeasuredHeight())
                 || (lp.width == ViewGroup.LayoutParams.WRAP_CONTENT &&
@@ -2054,7 +2058,8 @@ public final class ViewRootImpl implements ViewParent,
                             + " framesChanged=" + framesChanged);
 
                      // Ask host how big it wants to be
-                     //这里确定根布局想要有多大.
+                     //这里确定根布局想要有多大, 这会遍历测量所有的 child.
+                     //第一步.
                     performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);
 
                     // Implementation of weights from WindowManager.LayoutParams
@@ -2064,7 +2069,7 @@ public final class ViewRootImpl implements ViewParent,
                     int height = host.getMeasuredHeight();
                     boolean measureAgain = false;
                     //如果有权重比, 那么再重新 Measure 一次. 这时使用的是 MeasureSpec.EXACTLY
-                    // mode. 
+                    // mode. 所以在写布局的时候, 尽量不要写权重信息.
                     if (lp.horizontalWeight > 0.0f) {
                         width += (int) ((mWidth - width) * lp.horizontalWeight);
                         childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(width,
@@ -2077,7 +2082,6 @@ public final class ViewRootImpl implements ViewParent,
                                 MeasureSpec.EXACTLY);
                         measureAgain = true;
                     }
-
                     if (measureAgain) {
                         if (DEBUG_LAYOUT) Log.v(mTag,
                                 "And hey let's measure once more: width=" + width
@@ -2101,6 +2105,7 @@ public final class ViewRootImpl implements ViewParent,
         boolean triggerGlobalLayoutListener = didLayout
                 || mAttachInfo.mRecomputeGlobalAttributes;
         if (didLayout) {
+            //第二步: 测量完成布局之后, 就是 layout 布局.
             performLayout(lp, mWidth, mHeight);
 
             // By this point all views have been sized and positioned
@@ -2136,7 +2141,7 @@ public final class ViewRootImpl implements ViewParent,
                 host.debug();
             }
         }
-
+        //测量和布局完成, 通知layout监听事件
         if (triggerGlobalLayoutListener) {
             mAttachInfo.mRecomputeGlobalAttributes = false;
             mAttachInfo.mTreeObserver.dispatchOnGlobalLayout();
@@ -2242,7 +2247,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
                 mPendingTransitions.clear();
             }
-
+            //第三步: 绘制 View
             performDraw();
         } else {
             if (isViewVisible) {
@@ -2375,6 +2380,7 @@ public final class ViewRootImpl implements ViewParent,
 
         Trace.traceBegin(Trace.TRACE_TAG_VIEW, "layout");
         try {
+            //从根布局开始开始
             host.layout(0, 0, host.getMeasuredWidth(), host.getMeasuredHeight());
 
             mInLayout = false;
@@ -2384,6 +2390,7 @@ public final class ViewRootImpl implements ViewParent,
                 // If no layout-request flags are set on the requesting views, there is no problem.
                 // If some requests are still pending, then we need to clear those flags and do
                 // a full request/measure/layout pass to handle this situation.
+                // 如果 child 中有调用requestLayout方法, 那么就会执行第二次重新 measure 和 layout的过程
                 ArrayList<View> validLayoutRequesters = getValidLayoutRequesters(mLayoutRequesters,
                         false);
                 if (validLayoutRequesters != null) {
@@ -2400,6 +2407,7 @@ public final class ViewRootImpl implements ViewParent,
                                 " during layout: running second layout pass");
                         view.requestLayout();
                     }
+                    //重新测量一次布局, 再次 layout.
                     measureHierarchy(host, lp, mView.getContext().getResources(),
                             desiredWindowWidth, desiredWindowHeight);
                     mInLayout = true;
@@ -2626,6 +2634,9 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
+    /**WB_ANDROID: 2019-04-16 0010 
+     * 绘制 View 的过程.
+     */
     private void performDraw() {
         if (mAttachInfo.mDisplayState == Display.STATE_OFF && !mReportNextDraw) {
             return;
@@ -2762,7 +2773,7 @@ public final class ViewRootImpl implements ViewParent,
                     + surface + " surface.isValid()=" + surface.isValid() + ", appScale:" +
                     appScale + ", width=" + mWidth + ", height=" + mHeight);
         }
-
+        //通知监听器开始绘制 View.
         mAttachInfo.mTreeObserver.dispatchOnDraw();
 
         int xOffset = -mCanvasOffsetX;
@@ -2794,6 +2805,7 @@ public final class ViewRootImpl implements ViewParent,
                 mChoreographer.getFrameTimeNanos() / TimeUtils.NANOS_PER_MS;
 
         if (!dirty.isEmpty() || mIsAnimating || accessibilityFocusDirty) {
+            //如果需要绘制 View, 那么就开始
             if (mAttachInfo.mHardwareRenderer != null && mAttachInfo.mHardwareRenderer.isEnabled()) {
                 // If accessibility focus moved, always invalidate the root.
                 boolean invalidateRoot = accessibilityFocusDirty || mInvalidateRootRequested;
@@ -2828,7 +2840,7 @@ public final class ViewRootImpl implements ViewParent,
                 if (updated) {
                     requestDrawWindow();
                 }
-
+                //这里是真正的开启硬件加速后, 使用ThreadedRenderer绘制.
                 mAttachInfo.mHardwareRenderer.draw(mView, mAttachInfo, this);
             } else {
                 // If we get here with a disabled & requested hardware renderer, something went
@@ -2861,7 +2873,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
         }
-
+        //如果是动画, 则计划下一帧的数据.
         if (animating) {
             mFullRedrawNeeded = true;
             scheduleTraversals();

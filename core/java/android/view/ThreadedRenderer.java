@@ -650,6 +650,9 @@ public final class ThreadedRenderer {
 
     private void updateViewTreeDisplayList(View view) {
         view.mPrivateFlags |= View.PFLAG_DRAWN;
+        //如果显示调用 View 的invalidate()方法, 那么就会重建这个 View 的 displayList
+        //也就是会重新执行这个 View 的 draw()方法. 而如果不是调用了 invalidate 方法,
+        // 那么就只会执行更新 displayList, 也就是 view 的dispatchGetDisplayList方法.
         view.mRecreateDisplayList = (view.mPrivateFlags & View.PFLAG_INVALIDATED)
                 == View.PFLAG_INVALIDATED;
         view.mPrivateFlags &= ~View.PFLAG_INVALIDATED;
