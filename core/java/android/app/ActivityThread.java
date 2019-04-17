@@ -669,11 +669,6 @@ public final class ActivityThread {
             sendMessage(showWindow ? H.STOP_ACTIVITY_SHOW : H.STOP_ACTIVITY_HIDE, token, 0, configChanges, seq);
         }
 
-        /**WB_ANDROID: 2019-04-16 2319 
-         * ActivityStack.ensureActivitiesVisibleLocked()启动 Activity 的时候, 会
-         * 调用这里的方法, 设置 Activity 中的 Window 可见, 并添加 View. 这是向 Activity 中添加
-         * view 的开始.
-         */
         public final void scheduleWindowVisibility(IBinder token, boolean showWindow) {
             sendMessage(showWindow ? H.SHOW_WINDOW : H.HIDE_WINDOW, token);
         }
