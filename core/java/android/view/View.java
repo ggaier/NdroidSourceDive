@@ -10155,6 +10155,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @hide
      */
     public final boolean dispatchPointerEvent(MotionEvent event) {
+        //由于事件是触摸事件
         if (event.isTouchEvent()) {
             return dispatchTouchEvent(event);
         } else {

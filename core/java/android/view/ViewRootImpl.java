@@ -730,6 +730,7 @@ public final class ViewRootImpl implements ViewParent,
                         mInputQueue = new InputQueue();
                         mInputQueueCallback.onInputQueueCreated(mInputQueue);
                     }
+                    //初始化一个 InputEventReceiver.
                     mInputEventReceiver = new WindowInputEventReceiver(mInputChannel,
                             Looper.myLooper());
                 }
@@ -3890,11 +3891,14 @@ public final class ViewRootImpl implements ViewParent,
          * Delivers an event to be processed.
          */
         public final void deliver(QueuedInputEvent q) {
+            //如果当前的 InputEvent 的状态已经是结束了, 则转发
             if ((q.mFlags & QueuedInputEvent.FLAG_FINISHED) != 0) {
                 forward(q);
+                //是否需要丢弃掉该输入事件的处理.
             } else if (shouldDropInputEvent(q)) {
                 finish(q, false);
             } else {
+                //处理输入事件
                 apply(q, onProcess(q));
             }
         }
@@ -3953,7 +3957,10 @@ public final class ViewRootImpl implements ViewParent,
                 finishInputEvent(q);
             }
         }
-
+        
+        /**WB_ANDROID: 2019-05-08 1657 
+         * 是否需要丢掉这个输入事件.
+         */
         protected boolean shouldDropInputEvent(QueuedInputEvent q) {
             if (mView == null || !mAdded) {
                 Slog.w(mTag, "Dropping event due to root view being removed: " + q.mEvent);
@@ -4160,13 +4167,14 @@ public final class ViewRootImpl implements ViewParent,
             return FORWARD;
         }
 
-        @Override
+        @Overrid中e
         public void onFinishedInputEvent(Object token, boolean handled) {
             QueuedInputEvent q = (QueuedInputEvent)token;
             if (handled) {
                 finish(q, true);
                 return;
             }
+            //最终在这里处理.
             forward(q);
         }
     }
@@ -4479,7 +4487,9 @@ public final class ViewRootImpl implements ViewParent,
             final View eventTarget =
                     (event.isFromSource(InputDevice.SOURCE_MOUSE) && mCapturingView != null) ?
                             mCapturingView : mView;
+            //eventTarget 的话, 默认就是 mView, 也就是根布局.
             mAttachInfo.mHandlingPointerEvent = true;
+            //这里开始遍历 View, 并确定是否需要消费. 如果被消费, 那么就返回true.
             boolean handled = eventTarget.dispatchPointerEvent(event);
             maybeUpdatePointerIcon(event);
             mAttachInfo.mHandlingPointerEvent = false;
@@ -6096,6 +6106,7 @@ public final class ViewRootImpl implements ViewParent,
                     && mEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER);
         }
 
+        //如果是手动输入, 那么默认值是 0.
         public boolean shouldSendToSynthesizer() {
             if ((mFlags & FLAG_UNHANDLED) != 0) {
                 return true;
@@ -6168,6 +6179,7 @@ public final class ViewRootImpl implements ViewParent,
         enqueueInputEvent(event, null, 0, false);
     }
 
+    //将输入事件加入队列.
     void enqueueInputEvent(InputEvent event,
             InputEventReceiver receiver, int flags, boolean processImmediately) {
         adjustInputEventForCompatibility(event);
@@ -6206,14 +6218,19 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
+    /**WB_ANDROID: 2019-04-24 1752 
+     * 处理输入事件.
+     */
     void doProcessInputEvents() {
         // Deliver all pending input events in the queue.
         while (mPendingInputEventHead != null) {
             QueuedInputEvent q = mPendingInputEventHead;
             mPendingInputEventHead = q.mNext;
+            //当前没有需要处理的 InputEvent.
             if (mPendingInputEventHead == null) {
                 mPendingInputEventTail = null;
             }
+            //取出链表中的第一个, 并移除头部.
             q.mNext = null;
 
             mPendingInputEventCount -= 1;
@@ -6357,6 +6374,9 @@ public final class ViewRootImpl implements ViewParent,
             super(inputChannel, looper);
         }
 
+        /**WB_ANDROID: 2019-04-24 1750 
+         * 输入事件在 java 层的开始.
+         */
         @Override
         public void onInputEvent(InputEvent event) {
             enqueueInputEvent(event, this, 0, true);

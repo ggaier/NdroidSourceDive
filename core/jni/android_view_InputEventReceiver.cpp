@@ -329,7 +329,9 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
     }
 }
 
-
+/*
+Java 端实例化对象的时候, 调用的这个方法.
+ */
 static jlong nativeInit(JNIEnv* env, jclass clazz, jobject receiverWeak,
         jobject inputChannelObj, jobject messageQueueObj) {
     sp<InputChannel> inputChannel = android_view_InputChannel_getInputChannel(env,
@@ -344,7 +346,8 @@ static jlong nativeInit(JNIEnv* env, jclass clazz, jobject receiverWeak,
         jniThrowRuntimeException(env, "MessageQueue is not initialized.");
         return 0;
     }
-
+    //以上步骤都是进行非空判断.
+    //sp 是一个强引用的指针.
     sp<NativeInputEventReceiver> receiver = new NativeInputEventReceiver(env,
             receiverWeak, inputChannel, messageQueue);
     status_t status = receiver->initialize();

@@ -2234,6 +2234,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             final boolean split = (mGroupFlags & FLAG_SPLIT_MOTION_EVENTS) != 0;
             TouchTarget newTouchTarget = null;
             boolean alreadyDispatchedToNewTouchTarget = false;
+            //如果事件没有取消或者是没有被拦截, 那么就可以继续处理.
             if (!canceled && !intercepted) {
 
                 // If the event is targeting accessiiblity focus we give it to the

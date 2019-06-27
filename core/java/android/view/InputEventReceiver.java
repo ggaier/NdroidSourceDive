@@ -178,6 +178,9 @@ public abstract class InputEventReceiver {
         return false;
     }
 
+    /**WB_ANDROID: 2019-04-24 1746 
+     * InputChannel 会回调
+     */
     // Called from native code.
     @SuppressWarnings("unused")
     private void dispatchInputEvent(int seq, InputEvent event) {
