@@ -154,6 +154,8 @@ void NativeInputEventReceiver::setFdEvents(int events) {
     }
 }
 
+//处理输入事件的回调, 该回调发生在主线程.
+//当初始化的时候发送的事件是: ALOOPER_EVENT_INPUT.
 int NativeInputEventReceiver::handleEvent(int receiveFd, int events, void* data) {
     if (events & (ALOOPER_EVENT_ERROR | ALOOPER_EVENT_HANGUP)) {
         // This error typically occurs when the publisher has closed the input channel

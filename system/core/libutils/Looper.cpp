@@ -443,7 +443,7 @@ int Looper::addFd(int fd, int ident, int events, const sp<LooperCallback>& callb
     ALOGD("%p ~ addFd - fd=%d, ident=%d, events=0x%x, callback=%p, data=%p", this, fd, ident,
             events, callback.get(), data);
 #endif
-
+    
     if (!callback.get()) {
         if (! mAllowNonCallbacks) {
             ALOGE("Invalid attempt to set NULL callback but not allowed for this looper.");

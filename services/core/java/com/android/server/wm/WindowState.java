@@ -1536,7 +1536,9 @@ final class WindowState implements WindowManagerPolicy.WindowState {
         }
         String name = makeInputChannelName();
         InputChannel[] inputChannels = InputChannel.openInputChannelPair(name);
+        //0是 server channel
         mInputChannel = inputChannels[0];
+        //1是 client channel
         mClientChannel = inputChannels[1];
         mInputWindowHandle.inputChannel = inputChannels[0];
         if (outInputChannel != null) {

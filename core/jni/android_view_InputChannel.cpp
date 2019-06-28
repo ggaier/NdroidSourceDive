@@ -120,6 +120,8 @@ static jobject android_view_InputChannel_createInputChannel(JNIEnv* env,
     return inputChannelObj;
 }
 
+//开启 InputChannelPair, 打开了一对 Socket, 分别向server 和 client 发送信息
+//这两个 socket 最终被InputChannel 也就是本类依赖.
 static jobjectArray android_view_InputChannel_nativeOpenInputChannelPair(JNIEnv* env,
         jclass clazz, jstring nameObj) {
     const char* nameChars = env->GetStringUTFChars(nameObj, NULL);

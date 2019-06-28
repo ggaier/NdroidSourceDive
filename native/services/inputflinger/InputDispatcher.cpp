@@ -227,6 +227,8 @@ InputDispatcher::~InputDispatcher() {
     }
 }
 
+//当InputDispatchThread 线程启动后, 就不会再关闭.
+//然后, 这个线程就会不停地调用这个方法分发 Input 事件.
 void InputDispatcher::dispatchOnce() {
     nsecs_t nextWakeupTime = LONG_LONG_MAX;
     { // acquire lock
@@ -368,6 +370,7 @@ void InputDispatcher::dispatchOnceInnerLocked(nsecs_t* nextWakeupTime) {
         if (dropReason == DROP_REASON_NOT_DROPPED && mNextUnblockedEvent) {
             dropReason = DROP_REASON_BLOCKED;
         }
+        //分发按键事件
         done = dispatchKeyLocked(currentTime, typedEntry, &dropReason, nextWakeupTime);
         break;
     }
@@ -394,6 +397,7 @@ void InputDispatcher::dispatchOnceInnerLocked(nsecs_t* nextWakeupTime) {
         break;
     }
 
+    //分发完成后
     if (done) {
         if (dropReason != DROP_REASON_NOT_DROPPED) {
             dropInboundEventLocked(mPendingEvent, dropReason);
@@ -791,6 +795,7 @@ bool InputDispatcher::dispatchKeyLocked(nsecs_t currentTime, KeyEntry* entry,
 
     // Identify targets.
     Vector<InputTarget> inputTargets;
+    //查找 focused 的窗口
     int32_t injectionResult = findFocusedWindowTargetsLocked(currentTime,
             entry, inputTargets, nextWakeupTime);
     if (injectionResult == INPUT_EVENT_INJECTION_PENDING) {
@@ -920,6 +925,7 @@ void InputDispatcher::logOutboundMotionDetailsLocked(const char* prefix, const M
 #endif
 }
 
+//分发事件的前置条件走完, 开始分发事件.
 void InputDispatcher::dispatchEventLocked(nsecs_t currentTime,
         EventEntry* eventEntry, const Vector<InputTarget>& inputTargets) {
 #if DEBUG_DISPATCH_CYCLE
@@ -998,7 +1004,7 @@ int32_t InputDispatcher::handleTargetsNotReadyLocked(nsecs_t currentTime,
     if (mInputTargetWaitTimeoutExpired) {
         return INPUT_EVENT_INJECTION_TIMED_OUT;
     }
-
+    //这个时候, 就会出现 ANR.
     if (currentTime >= mInputTargetWaitTimeoutTime) {
         onANRLocked(currentTime, applicationHandle, windowHandle,
                 entry->eventTime, mInputTargetWaitStartTime, reason);
@@ -1100,9 +1106,11 @@ int32_t InputDispatcher::findFocusedWindowTargetsLocked(nsecs_t currentTime,
     }
 
     // Check whether the window is ready for more input.
+    //分发事件的时候, 判断 Window 是否准备完成, 等待输入.
     reason = checkWindowReadyForMoreInputLocked(currentTime,
             mFocusedWindowHandle, entry, "focused");
     if (!reason.isEmpty()) {
+        //如果没准备完成, 那么就要判断原因, 处理没有 ready的错误.
         injectionResult = handleTargetsNotReadyLocked(currentTime, entry,
                 mFocusedApplicationHandle, mFocusedWindowHandle, nextWakeupTime, reason.string());
         goto Unresponsive;
@@ -2133,6 +2141,7 @@ void InputDispatcher::releaseDispatchEntryLocked(DispatchEntry* dispatchEntry) {
     delete dispatchEntry;
 }
 
+//当 InputDispatcher 有Input事件发生的时候, 就会回调到该方法
 int InputDispatcher::handleReceiveCallback(int fd, int events, void* data) {
     InputDispatcher* d = static_cast<InputDispatcher*>(data);
 
@@ -4559,6 +4568,8 @@ InputDispatcherThread::~InputDispatcherThread() {
 }
 
 bool InputDispatcherThread::threadLoop() {
+    //InputManager 启动线程 Loop, 循环 dispatch 
+    //input 事件. 
     mDispatcher->dispatchOnce();
     return true;
 }
