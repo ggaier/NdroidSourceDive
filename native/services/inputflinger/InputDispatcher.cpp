@@ -251,6 +251,23 @@ void InputDispatcher::dispatchOnce() {
     // Wait for callback or timeout or wake.  (make sure we round up, not down)
     nsecs_t currentTime = now();
     int timeoutMillis = toMillisecondTimeoutDelay(currentTime, nextWakeupTime);
+    /*
+    If the timeout is zero, returns immediately without blocking.
+    If the timeout is negative, waits indefinitely until an event appears.
+    
+    Returns POLL_WAKE if the poll was awoken using wake() before
+    the timeout expired and no callbacks were invoked and no other file
+    descriptors were ready.
+    
+    Returns POLL_CALLBACK if one or more callbacks were invoked.
+    
+    Returns POLL_TIMEOUT if there was no data before the given
+    timeout expired.
+    
+    Returns POLL_ERROR if an error occurred.
+     */
+    //进入 epoll wait, 有以上三个条件下, 才会被唤醒. 比如 notify**()方法中, 会调用
+    //mLooper.awake()
     mLooper->pollOnce(timeoutMillis);
 }
 
@@ -2141,7 +2158,6 @@ void InputDispatcher::releaseDispatchEntryLocked(DispatchEntry* dispatchEntry) {
     delete dispatchEntry;
 }
 
-//当 InputDispatcher 有Input事件发生的时候, 就会回调到该方法
 int InputDispatcher::handleReceiveCallback(int fd, int events, void* data) {
     InputDispatcher* d = static_cast<InputDispatcher*>(data);
 

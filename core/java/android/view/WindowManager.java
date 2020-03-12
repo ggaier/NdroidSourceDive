@@ -195,7 +195,9 @@ public interface WindowManager extends ViewManager {
         @ViewDebug.ExportedProperty
         public float verticalWeight;
 
+        /** WB_ANDROID: 2019-07-12 1019 关于 window 类型的介绍.*/
         /**
+         * 
          * The general type of window.  There are three main classes of
          * window types:
          * <ul>

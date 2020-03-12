@@ -221,6 +221,7 @@ public final class MessageQueue {
 
     private void updateOnFileDescriptorEventListenerLocked(FileDescriptor fd, int events,
             OnFileDescriptorEventListener listener) {
+        //怀疑这里有问题?
         final int fdNum = fd.getInt$();
 
         int index = -1;
